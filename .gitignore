@@ -1,0 +1,12 @@
+# Media recordings
+*.webm
+*.mp4
+
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE config files
+.vscode/
+.idea/

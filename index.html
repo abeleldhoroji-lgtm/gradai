@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GradCam | Interactive Camera Effects for Musicians</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- MediaPipe Hands CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+</head>
+<body class="theme-neon-hud">
+
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo-area">
+        <div class="logo-icon"><i class="fa-solid fa-camera-retro"></i></div>
+        <h1>GRADCAM</h1>
+        <span class="badge live-badge">PRO</span>
+      </div>
+      <div class="gesture-hint">
+        <i class="fa-solid fa-hand"></i> Move hand to shape effects &nbsp;|&nbsp; <i class="fa-solid fa-hand-fist"></i> Open & close palm twice to switch effect
+      </div>
+    </header>
+
+    <main class="app-main">
+      <!-- Left Sidebar: Controls -->
+      <section class="control-panel glass-panel">
+        <h2 class="section-title"><i class="fa-solid fa-sliders"></i> Controls</h2>
+        
+        <!-- Webcam Actions -->
+        <div class="control-group">
+          <button id="btn-camera" class="btn btn-primary btn-glow">
+            <i class="fa-solid fa-video"></i> <span>Initialize Camera</span>
+          </button>
+        </div>
+
+        <div class="control-group">
+          <label for="camera-select">Select Camera Device</label>
+          <div class="select-wrapper">
+            <select id="camera-select" disabled>
+              <option value="">Camera not initialized</option>
+            </select>
+          </div>
+        </div>
+
+        <hr class="panel-divider">
+
+        <h2 class="section-title"><i class="fa-solid fa-gear"></i> Settings</h2>
+
+        <!-- Toggles -->
+        <div class="control-group toggle-group">
+          <div class="toggle-item">
+            <span>Show Hand Skeleton</span>
+            <label class="switch">
+              <input type="checkbox" id="chk-skeleton" checked>
+              <span class="slider round"></span>
+            </label>
+          </div>
+          <div class="toggle-item">
+            <span>Mirror Video</span>
+            <label class="switch">
+              <input type="checkbox" id="chk-mirror" checked>
+              <span class="slider round"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Sliders -->
+        <div class="control-group">
+          <div class="slider-header">
+            <label for="sld-particles">Effect Intensity</label>
+            <span id="val-particles" class="slider-value">50%</span>
+          </div>
+          <input type="range" id="sld-particles" min="10" max="100" value="50" class="range-slider">
+        </div>
+
+        <div class="control-group">
+          <div class="slider-header">
+            <label for="sld-transition">Transition Fade</label>
+            <span id="val-transition" class="slider-value">0.5s</span>
+          </div>
+          <input type="range" id="sld-transition" min="100" max="2000" step="100" value="500" class="range-slider">
+        </div>
+
+        <div class="diagnostics-panel">
+          <div class="diag-title">SYSTEM STATUS</div>
+          <div class="diag-row">
+            <span>FPS:</span>
+            <span id="fps-counter" class="text-glow">--</span>
+          </div>
+          <div class="diag-row">
+            <span>Hands Detected:</span>
+            <span id="hands-counter" class="text-glow">0 / 2</span>
+          </div>
+          <div class="diag-row">
+            <span>Hand 1 State:</span>
+            <span id="h1-state">Not Found</span>
+          </div>
+          <div class="diag-row">
+            <span>Hand 2 State:</span>
+            <span id="h2-state">Not Found</span>
+          </div>
+          <div class="diag-row">
+            <span>Faces Lit:</span>
+            <span id="faces-counter" class="text-glow">0</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Center Area: Canvas Display -->
+      <section class="display-container">
+        <!-- Hidden video element to read frames from -->
+        <video id="webcam" autoplay playsinline style="display: none;"></video>
+        
+        <div class="canvas-wrapper">
+          <canvas id="output-canvas"></canvas>
+          
+          <!-- Visual Overlay: Screen Glitch/Scanlines (can be toggled) -->
+          <div class="scanlines"></div>
+          <div class="vignette"></div>
+
+          <!-- Onboarding Overlay -->
+          <div id="onboarding-overlay" class="overlay-modal">
+            <div class="onboarding-content">
+              <div class="sparkle-icon"><i class="fa-solid fa-camera-retro"></i></div>
+              <h3>Welcome to GradCam</h3>
+              <p>Transform your camera feed with cinematic effects controlled by hand gestures. Perfect for live streams, music videos, and creative content.</p>
+              <div class="guide-steps">
+                <div class="step">
+                  <div class="step-num"><i class="fa-solid fa-camera"></i></div>
+                  <p>1. Allow Camera Access</p>
+                </div>
+                <div class="step">
+                  <div class="step-num"><i class="fa-solid fa-hand"></i></div>
+                  <p>2. Move hands to shape effects</p>
+                </div>
+                <div class="step">
+                  <div class="step-num"><i class="fa-solid fa-hand-fist"></i></div>
+                  <p>3. Open & close palm twice to switch effects</p>
+                </div>
+                <div class="step">
+                  <div class="step-num"><i class="fa-solid fa-circle-dot"></i></div>
+                  <p>4. Record with audio</p>
+                </div>
+              </div>
+              <button id="btn-start-now" class="btn btn-primary btn-glow">Launch GradCam</button>
+            </div>
+          </div>
+
+          <!-- Floating HUD Elements on Canvas -->
+          <div class="canvas-hud shadow-hud">
+            <span class="hud-item active-effect-hud">Preset: <strong id="hud-preset-name">NONE</strong></span>
+            <span class="hud-item tracking-status-hud"><i class="fa-solid fa-circle" id="hud-status-dot"></i> <span id="hud-status-text">OFFLINE</span></span>
+          </div>
+
+          <!-- Recording Bar -->
+          <div class="record-bar" id="record-bar">
+            <div class="record-bar-left">
+              <div class="select-wrapper mic-select-wrapper">
+                <select id="mic-select" title="Select Microphone">
+                  <option value="">🎙 Default Mic</option>
+                </select>
+              </div>
+            </div>
+            <div class="record-bar-center">
+              <button id="btn-record" class="btn-record" title="Start Recording">
+                <span class="rec-dot"></span>
+                <span id="btn-record-label">REC</span>
+              </button>
+              <span class="rec-timer" id="rec-timer">00:00</span>
+            </div>
+            <div class="record-bar-right">
+              <a id="download-link" class="download-link" style="display:none" download="gradcam-recording.webm">
+                <i class="fa-solid fa-download"></i> Save Video
+              </a>
+              <span id="rec-status" class="rec-status-label">Ready</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Sidebar: Presets Gallery -->
+      <section class="preset-gallery glass-panel">
+        <h2 class="section-title"><i class="fa-solid fa-images"></i> Effects Library</h2>
+        <div class="preset-list" id="preset-list-container">
+          <!-- Dynamically populated in JavaScript, fallback templates here for SEO/Structure -->
+          <div class="preset-item active" data-preset="0">
+            <div class="preset-index">01</div>
+            <div class="preset-info">
+              <h3>Cyberpunk HUD</h3>
+              <p>Futuristic concentric holographic targeting rings and grid elements tracking your hands.</p>
+            </div>
+            <div class="preset-active-indicator"><i class="fa-solid fa-circle-check"></i></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer / Bottom Guide -->
+    <footer class="app-footer">
+      <span>GradCam Pro &bull; Powered by MediaPipe</span>
+      <span class="footer-hint">Tip: Stand 2-4 feet from camera in good lighting.</span>
+    </footer>
+  </div>
+
+  <!-- Audio elements for interactive gesture sound effects (optional) -->
+  <audio id="snd-switch" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav" preload="auto"></audio>
+  <audio id="snd-charge" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-84.wav" preload="auto" volume="0.3"></audio>
+
+  <!-- Javascript Modules -->
+  <script src="effect.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
