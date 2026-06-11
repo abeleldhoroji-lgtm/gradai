@@ -171,8 +171,8 @@ class EffectsManager {
         this.drawNoirSpotlight(ctx, video, w, h, h1, handScale);
         break;
         
-      case 4: // 5. Chromatic Spectrums
-        this.drawChromaticSpectrums(ctx, video, w, h, h1);
+      case 4: // 5. Cosmic Nebula
+        this.drawCosmicNebula(ctx, video, w, h, h1);
         break;
         
       case 5: // 6. Golden Hour / Vintage
@@ -372,51 +372,99 @@ class EffectsManager {
     ctx.restore();
   }
 
-  // 5. Chromatic Spectrums (RGB split aberration)
-  drawChromaticSpectrums(ctx, video, w, h, h1) {
-    // Calculate RGB channel splits relative to hand offset from screen center
-    const cx = w / 2;
-    const cy = h / 2;
-    
-    // Displacement scales from 0 to 24px
-    const splitX = ((h1.x - cx) / cx) * 22;
-    const splitY = ((h1.y - cy) / cy) * 22;
-    
-    // Sync offscreen channel buffer
-    const oCtx = this.channelCtx;
-    oCtx.clearRect(0, 0, w, h);
+  // 5. Cosmic Nebula
+  drawCosmicNebula(ctx, video, w, h, h1) {
+    // 1. Base graded video
+    ctx.save();
+    ctx.filter = "saturate(1.2) contrast(1.1) brightness(0.9)";
+    ctx.drawImage(video, 0, 0, w, h);
+    ctx.restore();
     
     ctx.save();
-    ctx.globalCompositeOperation = 'lighter';
+    ctx.globalCompositeOperation = 'screen';
     
-    // Channel A: RED (shifted opposite)
-    oCtx.save();
-    oCtx.drawImage(video, -splitX, -splitY, w, h);
-    oCtx.globalCompositeOperation = 'multiply';
-    oCtx.fillStyle = '#ff0000';
-    oCtx.fillRect(0, 0, w, h);
-    oCtx.restore();
-    ctx.drawImage(this.channelCanvas, 0, 0);
+    const time = Date.now() / 1000;
     
-    // Channel B: GREEN (stationary center)
-    oCtx.save();
-    oCtx.clearRect(0, 0, w, h);
-    oCtx.drawImage(video, 0, 0, w, h);
-    oCtx.globalCompositeOperation = 'multiply';
-    oCtx.fillStyle = '#00ff00';
-    oCtx.fillRect(0, 0, w, h);
-    oCtx.restore();
-    ctx.drawImage(this.channelCanvas, 0, 0);
+    // 2. Multi-colored gaseous Nebula clouds centered at hand
+    // Violet gas
+    const radViolet = ctx.createRadialGradient(
+      h1.x + Math.sin(time) * 30, h1.y + Math.cos(time) * 30, 10,
+      h1.x, h1.y, w * 0.4
+    );
+    radViolet.addColorStop(0, 'rgba(150, 0, 255, 0.35)');
+    radViolet.addColorStop(0.5, 'rgba(80, 0, 180, 0.12)');
+    radViolet.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = radViolet;
+    ctx.fillRect(0, 0, w, h);
     
-    // Channel C: BLUE (shifted forward)
-    oCtx.save();
-    oCtx.clearRect(0, 0, w, h);
-    oCtx.drawImage(video, splitX, splitY, w, h);
-    oCtx.globalCompositeOperation = 'multiply';
-    oCtx.fillStyle = '#0000ff';
-    oCtx.fillRect(0, 0, w, h);
-    oCtx.restore();
-    ctx.drawImage(this.channelCanvas, 0, 0);
+    // Cyan gas
+    const radCyan = ctx.createRadialGradient(
+      h1.x + Math.cos(time * 0.7) * 40, h1.y + Math.sin(time * 0.7) * 40, 5,
+      h1.x, h1.y, w * 0.3
+    );
+    radCyan.addColorStop(0, 'rgba(0, 242, 254, 0.3)');
+    radCyan.addColorStop(0.6, 'rgba(0, 120, 255, 0.08)');
+    radCyan.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = radCyan;
+    ctx.fillRect(0, 0, w, h);
+    
+    // Magenta core
+    const radMagenta = ctx.createRadialGradient(
+      h1.x, h1.y, 2,
+      h1.x, h1.y, w * 0.18
+    );
+    radMagenta.addColorStop(0, 'rgba(255, 0, 180, 0.45)');
+    radMagenta.addColorStop(0.5, 'rgba(255, 0, 100, 0.15)');
+    radMagenta.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = radMagenta;
+    ctx.fillRect(0, 0, w, h);
+    
+    // 3. Twinkling cosmic stars (bokeh / lens flare elements)
+    const offsets = [
+      { dx: -50, dy: -30, size: 8, speed: 1 },
+      { dx: 60, dy: 40, size: 12, speed: 1.2 },
+      { dx: -30, dy: 60, size: 6, speed: 0.8 },
+      { dx: 70, dy: -50, size: 10, speed: 1.5 },
+      { dx: -80, dy: 20, size: 14, speed: 0.7 },
+      { dx: 20, dy: -70, size: 5, speed: 1.3 }
+    ];
+    
+    offsets.forEach(star => {
+      const pulse = 0.5 + Math.sin(time * 3 * star.speed) * 0.5;
+      const sx = h1.x + star.dx;
+      const sy = h1.y + star.dy;
+      const size = star.size * pulse;
+      
+      // Draw a glowing flare star (plus shape + core)
+      const starGrad = ctx.createRadialGradient(sx, sy, 0, sx, sy, size * 1.5);
+      starGrad.addColorStop(0, '#ffffff');
+      starGrad.addColorStop(0.3, 'rgba(0, 242, 254, 0.8)');
+      starGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = starGrad;
+      
+      ctx.beginPath();
+      ctx.arc(sx, sy, size * 1.5, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Star spikes
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(sx - size * 2.2, sy);
+      ctx.lineTo(sx + size * 2.2, sy);
+      ctx.moveTo(sx, sy - size * 2.2);
+      ctx.lineTo(sx, sy + size * 2.2);
+      ctx.stroke();
+    });
+    
+    // 4. White hot core
+    const coreGrad = ctx.createRadialGradient(h1.x, h1.y, 0, h1.x, h1.y, 8);
+    coreGrad.addColorStop(0, '#ffffff');
+    coreGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = coreGrad;
+    ctx.beginPath();
+    ctx.arc(h1.x, h1.y, 8, 0, Math.PI * 2);
+    ctx.fill();
     
     ctx.restore();
   }
@@ -645,10 +693,10 @@ const VISUAL_PRESETS = [
     description: "Grayscale feed with a soft, circular color spotlight track matching your palm center."
   },
   {
-    name: "Chromatic split",
-    themeClass: "theme-spectrum",
-    icon: "fa-solid fa-barcode",
-    description: "True RGB color split (aberration). Distance from screen center controls separation amount."
+    name: "Cosmic Nebula",
+    themeClass: "theme-nebula",
+    icon: "fa-solid fa-meteor",
+    description: "Interstellar gaseous clouds and twinkling stars tracking your palm center coordinates."
   },
   {
     name: "Golden Vintage",

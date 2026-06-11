@@ -31,7 +31,7 @@
         <span class="badge live-badge">PRO</span>
       </div>
       <div class="gesture-hint">
-        <i class="fa-solid fa-hand"></i> Move hand to shape effects &nbsp;|&nbsp; <i class="fa-solid fa-hand-fist"></i> Open & close palm twice to switch effect
+        <i class="fa-solid fa-hand"></i> Move hand to shape effects &nbsp;|&nbsp; <i class="fa-solid fa-hand-fist"></i> Open & close palm to switch effect
       </div>
     </header>
 
@@ -132,6 +132,42 @@
           <div class="scanlines"></div>
           <div class="vignette"></div>
 
+          <!-- OG Camera Viewfinder Elements -->
+          <div class="camera-viewfinder">
+            <!-- Viewfinder Corners -->
+            <div class="vf-corner vf-top-left"></div>
+            <div class="vf-corner vf-top-right"></div>
+            <div class="vf-corner vf-bottom-left"></div>
+            <div class="vf-corner vf-bottom-right"></div>
+            
+            <!-- Viewfinder Grid (Rule of Thirds) -->
+            <div class="vf-grid-line vf-grid-v1"></div>
+            <div class="vf-grid-line vf-grid-v2"></div>
+            <div class="vf-grid-line vf-grid-h1"></div>
+            <div class="vf-grid-line vf-grid-h2"></div>
+            
+            <!-- Viewfinder Center Crosshair -->
+            <div class="vf-crosshair"></div>
+            
+            <!-- Camera Status Indicators -->
+            <div class="vf-status vf-status-tl">
+              <span class="vf-rec-badge"><span class="vf-rec-dot"></span>REC</span>
+              <span class="vf-mode">AUTO</span>
+            </div>
+            <div class="vf-status vf-status-tr">
+              <span class="vf-battery"><i class="fa-solid fa-battery-three-quarters"></i> 82%</span>
+            </div>
+            <div class="vf-status vf-status-bl">
+              <span class="vf-iso">ISO 400</span>
+              <span class="vf-fstop">F/2.8</span>
+              <span class="vf-shutter">1/60s</span>
+            </div>
+            <div class="vf-status vf-status-br">
+              <span class="vf-resolution">1080p</span>
+              <span class="vf-fps">60 FPS</span>
+            </div>
+          </div>
+
           <!-- Onboarding Overlay -->
           <div id="onboarding-overlay" class="overlay-modal">
             <div class="onboarding-content">
@@ -149,7 +185,7 @@
                 </div>
                 <div class="step">
                   <div class="step-num"><i class="fa-solid fa-hand-fist"></i></div>
-                  <p>3. Open & close palm twice to switch effects</p>
+                  <p>3. Open & close palm to switch effects</p>
                 </div>
                 <div class="step">
                   <div class="step-num"><i class="fa-solid fa-circle-dot"></i></div>

@@ -264,7 +264,7 @@ function renderLoop(timestamp) {
       }
     }
     
-    // Process Schmitt Trigger state machine for hand gestures (double close to switch)
+    // Process Schmitt Trigger state machine for hand gestures (single close to switch)
     latestHandsData.forEach(hand => {
       const state = handStates[hand.label];
       
@@ -278,16 +278,11 @@ function renderLoop(timestamp) {
         // Trigger only if previously confirmed open
         if (state.state === GESTURE_STATE.OPEN_CONFIRMED) {
           const now = Date.now();
-          if (now - state.lastCloseTime < 1500) {
-            state.closeCount++;
-          } else {
-            state.closeCount = 1;
-          }
-          state.lastCloseTime = now;
-          
-          if (state.closeCount >= 2) {
+          if (now > globalCooldown) {
             triggerPresetSwitch(true); // instant switch
-            state.closeCount = 0; // reset count
+            
+            // Play sound synthesizer feedback
+            soundSynth.playSwitchSound();
             
             // Spawn large glowing splash ripple centered at hand trigger location
             triggerBurst = {
@@ -298,16 +293,9 @@ function renderLoop(timestamp) {
               opacity: 1.0,
               color: null // active theme color
             };
-          } else {
-            // Spawn smaller soft violet ripple to give feedback for the first close tap
-            triggerBurst = {
-              x: hand.palmCenter.x,
-              y: hand.palmCenter.y,
-              radius: 15,
-              maxRadius: 80,
-              opacity: 0.8,
-              color: '#6c5ce7' // violet
-            };
+            
+            // Update cooldown to prevent accidental rapid double-triggering
+            globalCooldown = now + COOLDOWN_DURATION;
           }
           
           // Reset state immediately so they must open the hand to re-arm
@@ -322,7 +310,14 @@ function renderLoop(timestamp) {
       }
     });
     
-    // Draw cinematic effects
+    // Draw cinematic effects — apply horizontal mirror flip to the canvas if mirror mode is on.
+    // Hand landmark coordinates are already pre-flipped in onHandResults, so the skeleton stays aligned.
+    if (isMirror) {
+      ctx.save();
+      ctx.translate(canvasElement.width, 0);
+      ctx.scale(-1, 1);
+    }
+
     effectsManager.update(latestHandsData, canvasElement.width, canvasElement.height, effectIntensity, elapsed);
     effectsManager.draw(ctx, canvasElement.width, canvasElement.height, showSkeleton, latestHandsData, videoElement);
     
@@ -331,7 +326,7 @@ function renderLoop(timestamp) {
       drawFaceSpotlights(ctx, canvasElement.width, canvasElement.height);
     }
     
-    // 3. Render Visual Trigger Burst Ripple if active
+    // Render Visual Trigger Burst Ripple if active
     if (triggerBurst) {
       const burstColor = triggerBurst.color || getComputedStyle(document.body).getPropertyValue('--theme-color').trim() || '#e8a838';
       ctx.save();
@@ -356,6 +351,11 @@ function renderLoop(timestamp) {
       }
     }
 
+    // Restore canvas transform after mirrored draw
+    if (isMirror) {
+      ctx.restore();
+    }
+
     // Update live indicators
     updateHUD(true);
   } else {
@@ -372,7 +372,7 @@ function renderLoop(timestamp) {
 
 // Trigger Preset Cycle (with optional instant transitions)
 function triggerPresetSwitch(instant = false) {
-  globalCooldown = Date.now() + 400; // shorter cooldown for responsive double taps
+  globalCooldown = Date.now() + 400; // cooldown to prevent accidental rapid triggers
   
   const nextPreset = (effectsManager.activePresetIndex + 1) % VISUAL_PRESETS.length;
   const duration = instant ? 50 : transitionDuration;
@@ -482,6 +482,7 @@ function updateHUD(isOnline) {
   const facesEl = document.getElementById("faces-counter");
   
   if (isOnline) {
+    document.body.classList.add("camera-active");
     dot.className = "fa-solid fa-circle tracking-active";
     text.innerText = "STREAM ACTIVE";
     
@@ -501,6 +502,7 @@ function updateHUD(isOnline) {
     // Face spotlight count
     if (facesEl) facesEl.innerText = latestFaces.length > 0 ? `${latestFaces.length} ✦` : '0';
   } else {
+    document.body.classList.remove("camera-active");
     dot.className = "fa-solid fa-circle";
     text.innerText = "OFFLINE";
     handsCountEl.innerText = "0 / 2";
@@ -908,6 +910,8 @@ async function startRecording() {
   // Update UI
   const recordBar = document.getElementById('record-bar');
   recordBar.classList.add('recording');
+  const viewfinder = document.querySelector('.camera-viewfinder');
+  if (viewfinder) viewfinder.classList.add('recording');
   document.getElementById('btn-record-label').innerText = 'STOP';
   document.getElementById('rec-status').innerText = 'Recording...';
   document.getElementById('download-link').style.display = 'none';
@@ -930,6 +934,8 @@ function stopRecording() {
   // Reset UI (onstop callback will finalize download)
   const recordBar = document.getElementById('record-bar');
   recordBar.classList.remove('recording');
+  const viewfinder = document.querySelector('.camera-viewfinder');
+  if (viewfinder) viewfinder.classList.remove('recording');
   document.getElementById('btn-record-label').innerText = 'REC';
   document.getElementById('rec-timer').innerText = '00:00';
   document.getElementById('rec-status').innerText = 'Processing...';

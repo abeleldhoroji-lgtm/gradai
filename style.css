@@ -53,10 +53,10 @@ body.theme-noir {
   --theme-color-rgb: 255, 255, 255;
 }
 
-body.theme-spectrum {
-  --theme-color: #00ffcc;
-  --theme-color-glow: rgba(0, 255, 204, 0.4);
-  --theme-color-rgb: 0, 255, 204;
+body.theme-nebula {
+  --theme-color: #b200ff;
+  --theme-color-glow: rgba(178, 0, 255, 0.4);
+  --theme-color-rgb: 178, 0, 255;
 }
 
 body.theme-golden {
@@ -750,6 +750,7 @@ canvas {
   transition: all 0.25s ease;
   position: relative;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .preset-item:hover {
@@ -1105,4 +1106,280 @@ canvas {
   .canvas-wrapper {
     aspect-ratio: 4/3;
   }
+}
+
+/* ── Dual-Theme CSS Overrides ── */
+
+:root {
+  --color-sand: #ebd197;
+  --color-sand-glow: rgba(235, 209, 151, 0.4);
+  --color-sand-rgb: 235, 209, 151;
+
+  --color-iceblue: #8ecae6;
+  --color-iceblue-glow: rgba(142, 202, 230, 0.4);
+  --color-iceblue-rgb: 142, 202, 230;
+}
+
+/* Base Body Gradient Updates */
+body::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: 
+    radial-gradient(circle at 10% 20%, rgba(var(--color-sand-rgb), 0.08), transparent 50%),
+    radial-gradient(circle at 90% 80%, rgba(var(--color-iceblue-rgb), 0.08), transparent 50%) !important;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Header Gradient Text */
+.logo-area h1 {
+  background: linear-gradient(135deg, var(--color-sand), var(--color-iceblue)) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* Left Sidebar (Controls) Sand Theme Overrides */
+.control-panel {
+  border-color: rgba(var(--color-sand-rgb), 0.15) !important;
+}
+.control-panel:hover {
+  border-color: rgba(var(--color-sand-rgb), 0.35) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(var(--color-sand-rgb), 0.04) !important;
+}
+.control-panel .section-title i {
+  color: var(--color-sand) !important;
+}
+.control-panel .slider-value {
+  color: var(--color-sand) !important;
+}
+.control-panel .range-slider::-webkit-slider-thumb {
+  border-color: var(--color-sand) !important;
+}
+.control-panel input:checked + .slider {
+  background-color: rgba(var(--color-sand-rgb), 0.15) !important;
+  border-color: rgba(var(--color-sand-rgb), 0.4) !important;
+}
+.control-panel input:checked + .slider:before {
+  background-color: var(--color-sand) !important;
+  box-shadow: 0 2px 8px var(--color-sand-glow) !important;
+}
+.control-panel select:focus {
+  border-color: var(--color-sand) !important;
+  box-shadow: 0 0 10px rgba(var(--color-sand-rgb), 0.2) !important;
+}
+.control-panel .btn-primary {
+  background: linear-gradient(135deg, #ebd197, #c6a254) !important;
+  box-shadow: 0 4px 15px rgba(235, 209, 151, 0.25) !important;
+  color: #090b11 !important;
+}
+.control-panel .btn-primary:hover:not(:disabled) {
+  box-shadow: 0 6px 20px rgba(235, 209, 151, 0.35) !important;
+}
+.control-panel .btn-glow {
+  box-shadow: 0 4px 15px var(--color-sand-glow) !important;
+}
+.control-panel .diag-row .text-glow {
+  background: rgba(var(--color-sand-rgb), 0.1) !important;
+  border: 1px solid rgba(var(--color-sand-rgb), 0.25) !important;
+  color: var(--color-sand) !important;
+}
+.control-panel::-webkit-scrollbar-thumb {
+  background: rgba(var(--color-sand-rgb), 0.15) !important;
+}
+.control-panel::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--color-sand-rgb), 0.3) !important;
+}
+
+/* Right Sidebar (Presets) Ice Blue Theme Overrides */
+.preset-gallery {
+  border-color: rgba(var(--color-iceblue-rgb), 0.15) !important;
+  overflow-y: hidden !important;
+  min-height: 0 !important; /* LAYOUT FIX: prevents grid item from blowing up */
+}
+.preset-gallery:hover {
+  border-color: rgba(var(--color-iceblue-rgb), 0.35) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(var(--color-iceblue-rgb), 0.04) !important;
+}
+.preset-gallery .section-title i {
+  color: var(--color-iceblue) !important;
+}
+.preset-item.active {
+  background: rgba(var(--color-iceblue-rgb), 0.06) !important;
+  border-color: rgba(var(--color-iceblue-rgb), 0.35) !important;
+  box-shadow: inset 0 0 10px rgba(var(--color-iceblue-rgb), 0.02) !important;
+}
+.preset-item.active::before {
+  background-color: var(--color-iceblue) !important;
+  box-shadow: 0 0 10px var(--color-iceblue-glow) !important;
+}
+.preset-item.active .preset-index {
+  color: var(--color-iceblue) !important;
+}
+.preset-item.active .preset-info h3 {
+  color: var(--color-iceblue) !important;
+}
+.preset-active-indicator {
+  color: var(--color-iceblue) !important;
+}
+.preset-list::-webkit-scrollbar-thumb {
+  background: rgba(var(--color-iceblue-rgb), 0.15) !important;
+}
+.preset-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--color-iceblue-rgb), 0.3) !important;
+}
+
+/* Record Bar Theme Overrides */
+.record-bar {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+.record-bar-left select {
+  border-color: rgba(var(--color-sand-rgb), 0.2) !important;
+}
+.record-bar-left select:focus {
+  border-color: var(--color-sand) !important;
+  box-shadow: 0 0 10px rgba(var(--color-sand-rgb), 0.2) !important;
+}
+.record-bar-right .download-link {
+  color: var(--color-iceblue) !important;
+  background: rgba(var(--color-iceblue-rgb), 0.1) !important;
+  border-color: rgba(var(--color-iceblue-rgb), 0.3) !important;
+}
+.record-bar-right .download-link:hover {
+  background: rgba(var(--color-iceblue-rgb), 0.18) !important;
+  border-color: var(--color-iceblue) !important;
+  box-shadow: 0 0 10px var(--color-iceblue-glow) !important;
+}
+.record-bar-right .rec-status-label {
+  color: var(--color-iceblue) !important;
+  opacity: 0.8 !important;
+}
+
+/* ── OG Camera Viewfinder Overlay Styling ── */
+.camera-viewfinder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+  font-family: var(--font-mono);
+  color: rgba(255, 255, 255, 0.45);
+  transition: opacity 0.3s ease;
+  opacity: 0; /* hidden when camera is inactive */
+}
+
+/* Show viewfinder when camera is active */
+body.camera-active .camera-viewfinder {
+  opacity: 1;
+}
+
+.vf-corner {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+}
+.vf-top-left {
+  top: 30px;
+  left: 30px;
+  border-right: none;
+  border-bottom: none;
+}
+.vf-top-right {
+  top: 30px;
+  right: 30px;
+  border-left: none;
+  border-bottom: none;
+}
+.vf-bottom-left {
+  bottom: 30px;
+  left: 30px;
+  border-right: none;
+  border-top: none;
+}
+.vf-bottom-right {
+  bottom: 30px;
+  right: 30px;
+  border-left: none;
+  border-top: none;
+}
+
+/* Viewfinder grid lines (Rule of Thirds) */
+.vf-grid-line {
+  position: absolute;
+}
+.vf-grid-v1 { left: 33.33%; top: 30px; bottom: 30px; width: 1px; border-left: 1px dashed rgba(255,255,255,0.07); }
+.vf-grid-v2 { left: 66.66%; top: 30px; bottom: 30px; width: 1px; border-left: 1px dashed rgba(255,255,255,0.07); }
+.vf-grid-h1 { top: 33.33%; left: 30px; right: 30px; height: 1px; border-top: 1px dashed rgba(255,255,255,0.07); }
+.vf-grid-h2 { top: 66.66%; left: 30px; right: 30px; height: 1px; border-top: 1px dashed rgba(255,255,255,0.07); }
+
+/* Center Crosshair */
+.vf-crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  transform: translate(-50%, -50%);
+}
+.vf-crosshair::before, .vf-crosshair::after {
+  content: "";
+  position: absolute;
+  background: rgba(255, 255, 255, 0.3);
+}
+.vf-crosshair::before { top: 5px; left: -6px; width: 24px; height: 1.5px; }
+.vf-crosshair::after { top: -6px; left: 5px; width: 1.5px; height: 24px; }
+
+/* Status Text Corners */
+.vf-status {
+  position: absolute;
+  display: flex;
+  gap: 12px;
+  font-size: 0.72rem;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+.vf-status-tl { top: 40px; left: 60px; align-items: center; }
+.vf-status-tr { top: 40px; right: 60px; }
+.vf-status-bl { bottom: 40px; left: 60px; }
+.vf-status-br { bottom: 40px; right: 60px; }
+
+.vf-mode {
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.vf-rec-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.3);
+}
+.camera-viewfinder.recording .vf-rec-badge {
+  color: #ff4757;
+}
+.vf-rec-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.3);
+}
+.camera-viewfinder.recording .vf-rec-dot {
+  background-color: #ff4757;
+  animation: pulse-dot 1s infinite;
+  box-shadow: 0 0 6px #ff4757;
+}
+
+.vf-battery i {
+  color: #00d68f;
+}
+.vf-iso, .vf-fstop, .vf-shutter, .vf-resolution, .vf-fps {
+  opacity: 0.65;
 }
